@@ -1,0 +1,71 @@
+{
+  "dataflows": [
+    {
+      "name": "prueba-acceso",
+      "sources": [
+        {
+          "name": "person_inputs",
+          "path": "/opt/bitnami/TBetances_SDG/DATOS/input/*",
+          "format": "JSON",
+
+        }
+      ],
+      "transformations": [
+        {
+          "name": "validation",
+          "type": "validate_fields",
+          "params": {
+            "input" : "person_inputs",
+            "validations": [
+              {
+                "field": "office",
+                "validations": "notEmpty",
+                "error": "Error01:Campo vacio",
+                "columnaError": "arraycoderrorbyfield"
+              },
+              {
+                "field": "age",
+                "validations": "notNull",
+                "error": "Error02:Campo nulo",
+                "columnaError": "arraycoderrorbyfield"
+              }
+            ]
+          }
+        },
+        {
+          "name": "ok_with_date",
+          "type": "add_fields",
+          "params": {
+            "input": "validation_ok",
+            "addFields": [
+              {
+                "name": "dt",
+                "function": "current_timestamp"
+              }
+            ]
+          }
+        }
+      ],
+      "sinks": [
+        {
+          "input": "ok_with_date",
+          "name": "raw-ok",
+          "paths": [
+            "/opt/bitnami/datos_salida/output/events/person"
+          ],
+          "format": "JSON",
+          "saveMode": "OVERWRITE"
+        },
+        {
+          "input": "validation_ko",
+          "name": "raw-ko",
+          "paths": [
+            "/opt/bitnami/datos_salida/output/discards/person"
+          ],
+          "format": "JSON",
+          "saveMode": "OVERWRITE"
+        }
+      ]
+    }
+  ]
+}
